@@ -31,5 +31,7 @@ search(query: string)
 ```ts
 get_game(page: string)
 ```
+## Example Code
+You can view the `example.js` file if you want to know what results the functions gives you.
 ## Credits
 If you want to use this, make sure to leave me a credit.
