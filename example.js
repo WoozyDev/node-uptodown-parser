@@ -74,7 +74,7 @@ parser.get_game('https://critical-ops.en.uptodown.com/android').then(game => {
     */
 })
 
-// // Use autocomplete and get results on uptodown.com:
+// Use autocomplete and get results on uptodown.com:
 parser.autocomplete('Criti').then(results => {
     console.log(results);
     /* Example Result
