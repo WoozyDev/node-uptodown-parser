@@ -1,6 +1,8 @@
 const { default: axios } = require("axios");
 const htmlParser = require('node-html-parser').default;
 
+let _platform = 'android';
+
 function parseSearch(data) {
     let content = htmlParser(data);
 
@@ -10,6 +12,7 @@ function parseSearch(data) {
         let title = a.childNodes[3].childNodes[1].textContent;
         let desc = a.childNodes[5].childNodes[0].text;
         return {
+            platform,
             img,
             page,
             title,
@@ -92,6 +95,7 @@ function parseGamePage(data) {
         { url: content.querySelector('.button.version').attrs.href }
     ];
     return {
+        platform,
         title,
         version,
         description,
@@ -113,10 +117,26 @@ function parseGamePage(data) {
     };
 }
 
+function parseDownload(data) {
+    let content = htmlParser(data);
+    let detailButton = content.getElementById('detail-download-button');
+    if(detailButton && detailButton.attrs['data-url']) {
+        return {
+            platform,
+            url: `https://dw.uptodown.com/dwn/${detailButton.attrs['data-url']}`,
+        };
+    }
+    return `Not Found`;
+}
+
 module.exports = {
+    usePlatform(platform) {
+        _platform = platform;
+        return this;
+    }, 
     autocomplete(query) {
         return new Promise((resolve, reject) => {
-            axios.post('https://en.uptodown.com/android/en/s', {
+            axios.post(`https://en.uptodown.com/${_platform}/en/s`, {
                 queryString: query
             }, {
                 headers: {
@@ -125,8 +145,10 @@ module.exports = {
             }).then(res => {
                 if(res.data && typeof res.data != 'string') {
                     if(res.data.success != undefined && res.data.success == 1) {
+                        if(res.data.data == undefined) return resolve([]);
                         resolve(res.data.data.map(a => {
-                            a.name = a.name.replace('<b>', '').replace('</b>', '');
+                            a.name = a.name.split('<b>').filter(a => a != '').join('')
+                                            .split('</b>').filter(a => a != '').join('');
                             return a;
                         }));
                     } else {
@@ -140,9 +162,9 @@ module.exports = {
     },
     search(query) {
         return new Promise((resolve, reject) => {
-            axios.post('https://en.uptodown.com/android/search', {
+            axios.post(`https://en.uptodown.com/${_platform}/search`, {
                 singlebutton: "",
-                q: "critical ops"
+                q: query
             }, {
                 headers: {
                     "content-type": "application/x-www-form-urlencoded",
@@ -159,4 +181,11 @@ module.exports = {
             }).catch(reject);
         })
     },
+    get_download_link(pageUrl) {
+        return new Promise((resolve, reject) => {
+            axios.get(`${pageUrl.includes(`/${_platform}/download`) ? pageUrl : `${pageUrl}${pageUrl.endsWith('/') ? '' : '/'}download`}`).then(res => {
+                resolve(parseDownload(res.data));
+            }).catch(reject);
+        })
+    }
 }

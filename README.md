@@ -23,6 +23,10 @@ import parser from "./parser";
 ```
 ## Main Functions
 ```ts
+// the calls after this, will use the platform you have set here.
+usePlatform(platform: 'android' | 'windows' | 'mac')
+```
+```ts
 autocomplete(query: string)
 ```
 ```ts
@@ -30,6 +34,10 @@ search(query: string)
 ```
 ```ts
 get_game(page: string)
+```
+```ts
+// page: the same url you use for get_game() function
+get_download_link(page: string)
 ```
 ## Example Code
 You can view the `example.js` file if you want to know what results the functions gives you.
